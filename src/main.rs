@@ -11,7 +11,7 @@ use users::{get_user_by_uid, get_current_uid};
 
 
 fn main() {
-    let listener = TcpListener::bind("127.0.0.1:1080").unwrap();
+    let listener = TcpListener::bind("0.0.0.0:1080").unwrap();
     let pool = ThreadPool::new(4);
 
     listen(listener, pool)
