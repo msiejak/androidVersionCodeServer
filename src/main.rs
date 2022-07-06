@@ -11,7 +11,7 @@ use users::{get_user_by_uid, get_current_uid};
 
 
 fn main() {
-    let listener = TcpListener::bind("127.0.0.1:1572").unwrap();
+    let listener = TcpListener::bind("127.0.0.1:92").unwrap();
     let pool = ThreadPool::new(4);
 
     listen(listener, pool)
@@ -42,13 +42,12 @@ fn handle_connection(mut stream: TcpStream) {
     let get = b"GET /get";
     let set = b"GET /set";
     let buffer_text = String::from(String::from_utf8_lossy(&buffer));
-    let app_name = find_between(&buffer_text, "package=", " HTTP/1.1");
     let user = get_user_by_uid(get_current_uid()).unwrap();
     let file_path = format!("/home/{}/version_codes.json", user.name().to_string_lossy());
     let json_file = read(&file_path).unwrap();
 
     let (status_line, output) = if buffer.starts_with(get) {
-
+        let app_name = find_between(&buffer_text, "package=", " HTTP/1.1");
         let json: Value = serde_json::from_slice(&json_file).unwrap();
         println!("{}", app_name);
         let version = json[app_name].as_i64().unwrap();
@@ -57,6 +56,7 @@ fn handle_connection(mut stream: TcpStream) {
         ("HTTP/1.1 200 OK", final_str)
     } else if buffer.starts_with(set) {
         let version_code = find_between(&buffer_text, "&versionCode=", " HTTP/1.1");
+        let app_name = find_between(&buffer_text, "package=", "&versionCode");
         println!("{}", version_code);
         let mut json: Value = serde_json::from_slice(&json_file).unwrap();
         println!("updated {} versionCode", app_name);
